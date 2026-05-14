@@ -1,0 +1,88 @@
+#include "DHT.h"
+
+// --- Pin Definitions ---
+#define DHTPIN 26           // DHT22 data pin connected to GPIO 26
+const int FLAME_PIN = 34;   // Flame sensor Analog output connected to GPIO 34
+const int SMOKE_PIN = 35;   // Smoke sensor Analog output connected to GPIO 35
+const int BUZZER_PIN = 12;  // Active-LOW Buzzer connected to GPIO 12
+
+// --- Sensor Settings ---
+#define DHTTYPE DHT22       // Change to DHT11 if you are using a DHT11
+DHT dht(DHTPIN, DHTTYPE);
+
+// --- Alarm Thresholds ---
+int flameThreshold = 1500;  // Lower values usually mean MORE flame/infrared
+int smokeThreshold = 2000;  // Higher values usually mean MORE smoke
+float tempThreshold = 25.0; // Temperature alarm threshold in Celsius
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000); 
+
+  // Initialize the DHT sensor
+  dht.begin();
+
+  // Initialize inputs
+  pinMode(FLAME_PIN, INPUT);
+  pinMode(SMOKE_PIN, INPUT);
+
+  // Initialize buzzer pin and set it to HIGH (Deactivated/Off) immediately
+  pinMode(BUZZER_PIN, OUTPUT);
+  digitalWrite(BUZZER_PIN, HIGH); 
+
+  // Wait for sensors to stabilize
+  delay(3000); 
+  
+  // Print a CSV header once at startup
+  Serial.println("Temp,Humidity,Flame,Smoke,Alarm");
+}
+
+void loop() {
+  // Wait 2 seconds between measurements
+  delay(2000);
+
+  // --- 1. Read All Sensors ---
+  float h = dht.readHumidity();
+  float t = dht.readTemperature(); // Celsius
+  int flameValue = analogRead(FLAME_PIN);
+  int smokeValue = analogRead(SMOKE_PIN);
+
+  // --- 2. Evaluate Alarm Conditions ---
+  bool alarmActive = false;
+
+  if (!isnan(t) && t >= tempThreshold) alarmActive = true;
+  if (flameValue <= flameThreshold) alarmActive = true;
+  if (smokeValue >= smokeThreshold) alarmActive = true;
+
+  // --- 3. Control the Buzzer ---
+  if (alarmActive) {
+    digitalWrite(BUZZER_PIN, LOW);
+  } else {
+    digitalWrite(BUZZER_PIN, HIGH);
+  }
+
+  // --- 4. Write CSV Data to Serial ---
+  // Format: Temp,Humidity,FlameRaw,SmokeRaw,AlarmStatus(1 or 0)
+  if (isnan(t)) {
+    Serial.print("NaN,");
+  } else {
+    Serial.print(t); 
+    Serial.print(",");
+  }
+
+  if (isnan(h)) {
+    Serial.print("NaN,");
+  } else {
+    Serial.print(h); 
+    Serial.print(",");
+  }
+
+  Serial.print(flameValue); 
+  Serial.print(",");
+  
+  Serial.print(smokeValue); 
+  Serial.print(",");
+  
+  // Output 1 for True (Alarm), 0 for False (Safe)
+  Serial.println(alarmActive ? 1 : 0);
+}
