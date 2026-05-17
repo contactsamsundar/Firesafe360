@@ -1,0 +1,11 @@
+#setup virtual environment 
+python -m venv firesafe360
+
+#activate virtual environment 
+firesafe360\Scripts\activate.bat
+
+# First, upgrade pip
+python -m pip install --upgrade pip
+
+# Install all the project requirements
+pip install tensorflow sounddevice numpy blessed opencv-python pandas ultralytics pyserial
