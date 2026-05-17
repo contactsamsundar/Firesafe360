@@ -1,3 +1,7 @@
+
+<img width="1119" height="752" alt="image" src="https://github.com/user-attachments/assets/ec9895c5-1d35-41a7-b0bf-cfa3dcf775db" />
+
+
 Camera based fire detection run against multiple AI model :
 <img width="1045" height="713" alt="image" src="https://github.com/user-attachments/assets/bfd7bd07-fd2e-42fd-85e0-d032e1ec58b9" />
 
